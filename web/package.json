@@ -2,16 +2,17 @@
   "name": "web",
   "version": "1.0.0",
   "main": "index.js",
+  "description": "",
+  "author": "Sneha Chakraborty",
+  "license": "ISC",
+  "engines": { "node": ">=18.17" },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview --port 5173",
+    "typecheck": "tsc --noEmit",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "Sneha Chakraborty",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
     "@tanstack/react-query": "^5.87.1",
