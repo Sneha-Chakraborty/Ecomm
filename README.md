@@ -87,20 +87,20 @@ Health: GET /health
 
 ### Auth
 
-POST /auth/signup { name, email, password } → { user }
-POST /auth/login { email, password } → { user } + cookie
-GET /auth/me → { user }
-POST /auth/logout → 204
+POST /auth/signup { name, email, password } → { user }  
+POST /auth/login { email, password } → { user } + cookie  
+GET /auth/me → { user }  
+POST /auth/logout → 204  
 
 ### Items
 
 GET /items?q=&category=&minPrice=&maxPrice=&sort=&page=&limit=
-→ { items, total, page, pageSize }
-GET /items/:id
-(admin) POST /items, PATCH /items/:id, DELETE /items/:id (Coming soon).
-Cart (guest or user)
-GET /cart → { cart }
-POST /cart/add { itemId, quantity? } → { cart }
-PATCH /cart/item/:itemId { quantity } → { cart }
-DELETE /cart/item/:itemId → { cart }
-POST /cart/clear → { cart }
+→ { items, total, page, pageSize }  
+GET /items/:id  
+(admin) POST /items, PATCH /items/:id, DELETE /items/:id (Coming soon).  
+Cart (guest or user)  
+GET /cart → { cart }  
+POST /cart/add { itemId, quantity? } → { cart }  
+PATCH /cart/item/:itemId { quantity } → { cart }  
+DELETE /cart/item/:itemId → { cart }  
+POST /cart/clear → { cart }  
