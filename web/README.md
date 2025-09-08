@@ -61,10 +61,10 @@ Health: GET /health
 
 ## Auth
 
-`POST /auth/signup { name, email, password }  
+`POST /auth/signup { name, email, password }    
 POST /auth/login { email, password } → sets cookie  
 GET /auth/me  
-POST /auth/logout` 
+POST /auth/logout`
 
 ## Items
 
