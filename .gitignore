@@ -1,0 +1,101 @@
+# --------------------------
+# OS junk
+# --------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --------------------------
+# Node / package managers
+# --------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+
+# Lockfiles — KEEP THESE COMMITTED for reproducible builds
+# (do NOT ignore package-lock.json / yarn.lock / pnpm-lock.yaml)
+
+# --------------------------
+# Build outputs
+# --------------------------
+dist/
+build/
+.cache/
+.tmp/
+temp/
+coverage/
+.nyc_output/
+
+# App-specific builds (explicit)
+web/dist/
+server/dist/
+
+# Vite cache
+web/.vite/
+
+# --------------------------
+# Env & secrets
+# --------------------------
+# Root envs
+.env
+.env.*
+
+# Server envs
+server/.env
+server/.env.*
+
+# Web/Vite envs
+web/.env
+web/.env.*
+
+# Keep example envs
+!.env.example
+!server/.env.example
+!web/.env.example
+
+# --------------------------
+# IDE/Editor
+# --------------------------
+.vscode/*
+!.vscode/extensions.json        # keep recommended extensions if you add it
+!.vscode/settings.json          # optional: keep shared settings
+.idea/
+*.iml
+
+# --------------------------
+# Misc
+# --------------------------
+*.local
+*.pem
+*.key
+*.crt
+-----------------------------
+
+# OS junk (recursive)
+**/.DS_Store
+**/Thumbs.db
+
+# Logs
+logs/
+**/*.log
+
+# Dev/deploy tool state (optional)
+.vercel/
+.netlify/
+.turbo/
+
+# E2E tools (optional; if you add them later)
+cypress/videos/
+cypress/screenshots/
+playwright-report/
+test-results/
+
+# Editor swap files
+*.swp
+*.swo
