@@ -64,3 +64,43 @@ npm run dev
 
 
 ## Open http://localhost:5173.
+
+
+### 🔐 Auth Flow (summary)
+
+Login sets a HttpOnly cookie (token).
+On app mount, SPA calls /auth/me to hydrate user in the Zustand store.
+Logout clears cookie; Navbar updates.
+No tokens in localStorage; cookies flow via Axios withCredentials: true.
+
+### 🛒 Cart Behavior
+
+Guest cart: web/src/store/cart.ts ensures a UUID in localStorage (cartId).
+Axios attaches X-Cart-Id on every request; server uses this to load/persist a guest cart.
+Logged-in cart: identified by userId in the JWT cookie.
+The same UI works for both. Navbar badge uses useQuery(["cart"]).
+
+### 🔗 Key Endpoints
+
+Base: http://localhost:8080/api
+Health: GET /health
+
+### Auth
+
+POST /auth/signup { name, email, password } → { user }
+POST /auth/login { email, password } → { user } + cookie
+GET /auth/me → { user }
+POST /auth/logout → 204
+
+### Items
+
+GET /items?q=&category=&minPrice=&maxPrice=&sort=&page=&limit=
+→ { items, total, page, pageSize }
+GET /items/:id
+(admin) POST /items, PATCH /items/:id, DELETE /items/:id (Coming soon).
+Cart (guest or user)
+GET /cart → { cart }
+POST /cart/add { itemId, quantity? } → { cart }
+PATCH /cart/item/:itemId { quantity } → { cart }
+DELETE /cart/item/:itemId → { cart }
+POST /cart/clear → { cart }
