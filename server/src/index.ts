@@ -1,3 +1,4 @@
+// server/src/index.ts
 import app from "./app";
 import { connectToDB } from "./db/connect";
 import { ENV } from "./config/env";
@@ -5,9 +6,9 @@ import { ENV } from "./config/env";
 async function start() {
   try {
     await connectToDB();
-    app.listen(ENV.PORT, () => {
-      console.log(`🚀 Server listening on http://localhost:${ENV.PORT}`);
-      console.log(`🩺 Health check:      http://localhost:${ENV.PORT}/api/health`);
+    app.listen(ENV.PORT, "0.0.0.0", () => {     // 👈 important on Render
+      console.log(`🚀 Server listening on http://0.0.0.0:${ENV.PORT}`);
+      console.log(`🩺 Health check:      /api/health`);
     });
   } catch (err) {
     console.error("❌ Failed to start server:", err);
@@ -15,7 +16,6 @@ async function start() {
   }
 }
 
-// Helpful global handlers
 process.on("unhandledRejection", (reason) => {
   console.error("UNHANDLED REJECTION:", reason);
 });

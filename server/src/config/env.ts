@@ -8,6 +8,10 @@ const durationRe = /^\d+\s*(ms|s|m|h|d|w|y)$/i;
 const EnvSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   PORT: z.coerce.number().int().positive().default(8080),
+
+  // 👇 optional but handy if you want to read host from env (Render is fine with 0.0.0.0)
+  HOST: z.string().default("0.0.0.0"),
+
   MONGO_URI: z
     .string()
     .min(1, "MONGO_URI is required")
@@ -29,6 +33,12 @@ const EnvSchema = z.object({
         }),
     ])
     .default("14d"),
+
+  // 👇 ADD THIS FIELD
+  CORS_ORIGIN: z
+    .string()
+    // comma-separated list; keep a sensible dev default
+    .default("http://localhost:5173"),
 });
 
 type EnvShape = z.infer<typeof EnvSchema>;
