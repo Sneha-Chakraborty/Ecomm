@@ -1,91 +1,42 @@
-import {
-  Schema,
-  model,
-  models,
-  type Document,
-  type Types,
-  type Model,
-} from "mongoose";
+import { Schema, model, models, type InferSchemaType, type Model, Types } from "mongoose";
 
-/** A single line in the cart */
-export interface CartItem {
-  item: Types.ObjectId; // ref: Item
-  qty: number;
-}
-
-/** Cart doc: keyed by either userId (logged-in) or cartId (guest) */
-export interface CartDocument extends Document {
-  userId?: Types.ObjectId | null; // ref: User
-  cartId?: string | null;         // guest cart stable ID (UUID from frontend)
-  items: CartItem[];
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-const CartItemSchema = new Schema<CartItem>(
+const CartItemSchema = new Schema(
   {
-    item: {
-      type: Schema.Types.ObjectId,
-      ref: "Item",
-      required: true,
-    },
-    qty: {
-      type: Number,
-      required: true,
-      min: 1,
-      default: 1,
-    },
+    item: { type: Schema.Types.ObjectId, ref: "Item", required: true },
+    qty: { type: Number, required: true, min: 1, default: 1 },
   },
   { _id: false }
 );
 
-const CartSchema = new Schema<CartDocument>(
+const toPlainOpts = {
+  virtuals: true,
+  versionKey: false as const,
+  transform(_doc: unknown, ret: any) {
+    ret.id = String(ret._id);
+    delete ret._id;
+    return ret;
+  },
+};
+
+const CartSchema = new Schema(
   {
-    userId: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      index: true,
-      sparse: true,
-      default: null,
-    },
-    cartId: {
-      type: String,
-      index: true,
-      sparse: true,
-      default: null,
-    },
-    items: {
-      type: [CartItemSchema],
-      default: [],
-    },
+    userId: { type: Types.ObjectId, ref: "User", default: null }, // no index:true here
+    cartId: { type: String, default: null },                      // no index:true here
+    items: { type: [CartItemSchema], default: [] },
   },
   {
     timestamps: true,
-    toJSON: {
-      virtuals: true,
-      transform(_doc, ret) {
-        // Cast to any to safely mutate and delete without TS complaining
-        const r = ret as any;
-        r.id = String(r._id);
-        delete r._id;
-        delete r.__v;
-      },
-    },
-    toObject: {
-      virtuals: true,
-      transform(_doc, ret) {
-        const r = ret as any;
-        r.id = String(r._id);
-        delete r._id;
-        delete r.__v;
-      },
-    },
+    toJSON: toPlainOpts,
+    toObject: toPlainOpts,
   }
 );
 
-/** Helpful indexes */
+// Create indexes here (and ONLY here) to avoid duplicate-index warnings
 CartSchema.index({ userId: 1 });
 CartSchema.index({ cartId: 1 });
 
-export const Cart: Model<CartDocument> =
-  (models.Cart as Model<CartDocument>) || model<CartDocument>("Cart", CartSchema);
+type CartProps = InferSchemaType<typeof CartSchema>;
+export type CartModel = Model<CartProps>;
+
+export const Cart =
+  (models.Cart as CartModel | undefined) || model<CartProps>("Cart", CartSchema);

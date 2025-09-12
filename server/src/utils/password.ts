@@ -1,11 +1,9 @@
 import bcrypt from "bcryptjs";
 
-const SALT_ROUNDS = 10;
-
-export async function hashPassword(plain: string) {
-  return bcrypt.hash(plain, SALT_ROUNDS);
+export function hashPassword(password: string) {
+  return bcrypt.hash(password, 10);
 }
 
-export async function verifyPassword(plain: string, hash: string) {
-  return bcrypt.compare(plain, hash);
+export function verifyPassword(password: string, hash: string) {
+  return bcrypt.compare(password, hash);
 }

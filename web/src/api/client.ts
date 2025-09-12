@@ -5,7 +5,7 @@ const BASE_URL =
   (import.meta as any).env?.VITE_API_URL?.toString() || "http://localhost:8080/api";
 
 export const api = axios.create({
-  baseURL: BASE_URL,
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080/api",
   withCredentials: true, // send cookies (JWT)
 });
 

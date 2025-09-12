@@ -1,57 +1,46 @@
 // server/src/modules/auth/auth.service.ts
-import { User, type UserDocument } from "./user.model";
-import type { SignupBody, LoginBody } from "./auth.types";
+import { User } from "./user.model";
 import { hashPassword, verifyPassword } from "../../utils/password";
 import { ApiError } from "../../middleware/error";
+import type { Document } from "mongoose";
 
-/** What we return to clients (never include passwordHash) */
-export type PublicUser = {
-  id: string;
-  name: string;
-  email: string;
-};
+export type PublicUser = { id: string; name: string; email: string };
 
-function toPublicUser(u: UserDocument): PublicUser {
-  return { id: u._id.toString(), name: u.name, email: u.email };
+function toPublicUser(u: any): PublicUser {
+  return { id: String(u._id), name: u.name, email: u.email };
 }
 
-/**
- * Create a new user (signup)
- * - Ensures email is unique
- * - Hashes password
- * - Returns public fields only
- */
-export async function createUser(input: SignupBody): Promise<PublicUser> {
+export async function createUser(input: {
+  name: string;
+  email: string;
+  password: string;
+}): Promise<PublicUser> {
   const email = input.email.toLowerCase().trim();
 
-  const existing = await User.findOne({ email }).lean();
-  if (existing) {
+  const exists = await User.findOne({ email }).lean().exec();
+  if (exists) {
     throw new ApiError(409, "Email already in use", "EMAIL_TAKEN");
   }
 
   const passwordHash = await hashPassword(input.password);
-  const user = await User.create({
-    name: input.name.trim(),
-    email,
-    passwordHash,
-  });
-
-  return toPublicUser(user);
+  const doc = await User.create({ name: input.name, email, passwordHash });
+  return toPublicUser(doc);
 }
 
-/**
- * Verify credentials (login)
- * - Finds user by email
- * - Compares password (bcrypt)
- * - Returns public user on success
- * - Throws 401 on failure
- */
-export async function verifyUser(input: LoginBody): Promise<PublicUser> {
+export async function verifyUser(input: {
+  email: string;
+  password: string;
+}): Promise<PublicUser> {
   const email = input.email.toLowerCase().trim();
-  const user = await User.findOne({ email });
 
-  // Do not reveal which field failed (email vs password)
-  if (!user) {
+  // 🔑 MUST include +passwordHash because the schema has select:false
+  const user = (await User.findOne({ email })
+    .select("+passwordHash")
+    .exec()) as (Document & { _id: any; name: string; email: string; passwordHash: string }) | null;
+
+  if (!user || !user.passwordHash) {
+    // tiny delay to avoid timing oracle
+    await new Promise((r) => setTimeout(r, 150));
     throw new ApiError(401, "Invalid email or password", "INVALID_CREDENTIALS");
   }
 

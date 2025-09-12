@@ -5,11 +5,15 @@ import { AUTH_COOKIE, signJwt, jwtExpiryToMs } from "../../utils/jwt";
 import { IS_PROD } from "../../config/env";
 import { ApiError } from "../../middleware/error";
 
-/** Shared cookie options for the auth cookie */
+/**
+ * Base cookie settings shared by login/logout; `sameSite` is dynamic:
+ * - dev (localhost): lax
+ * - prod (different domains for SPA/API): none (requires secure)
+ */
 const cookieBaseOptions = {
   httpOnly: true,
-  sameSite: "lax" as const,
-  secure: IS_PROD, // true in production; false in local dev
+  secure: IS_PROD, // true on Render/HTTPS, false on localhost
+  sameSite: (IS_PROD ? "none" : "lax") as "none" | "lax",
   path: "/",
 };
 
@@ -18,9 +22,17 @@ const cookieBaseOptions = {
  * Body validated via validate(signupSchema) in the route.
  * Returns: { user: { id, name, email } }
  */
-export async function signupHandler(req: Request, res: Response, next: NextFunction) {
+export async function signupHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   try {
-    const data = (req as any).validated as { name: string; email: string; password: string };
+    const data = (req as any).validated as {
+      name: string;
+      email: string;
+      password: string;
+    };
     const user = await createUser(data);
     return res.status(201).json({ user });
   } catch (err) {
@@ -35,7 +47,11 @@ export async function signupHandler(req: Request, res: Response, next: NextFunct
  * - Signs JWT and sets HttpOnly cookie
  * Returns: { user: { id, name, email } }
  */
-export async function loginHandler(req: Request, res: Response, next: NextFunction) {
+export async function loginHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   try {
     const data = (req as any).validated as { email: string; password: string };
     const user = await verifyUser(data);
@@ -48,7 +64,8 @@ export async function loginHandler(req: Request, res: Response, next: NextFuncti
 
     res.cookie(AUTH_COOKIE, token, {
       ...cookieBaseOptions,
-      maxAge: jwtExpiryToMs(), // e.g., 14d → ms
+      // 14d default (or whatever you set in env); jwtExpiryToMs() already handles ENV.JWT_EXPIRES_IN
+      maxAge: jwtExpiryToMs(),
     });
 
     return res.status(200).json({ user });
@@ -62,13 +79,17 @@ export async function loginHandler(req: Request, res: Response, next: NextFuncti
  * Requires requireAuth middleware to populate req.user.
  * Returns: { user: { id, email, name, iat?, exp? } }
  */
-export async function meHandler(req: Request, res: Response, next: NextFunction) {
+export async function meHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   try {
-    if (!req.user) {
+    if (!(req as any).user) {
       return next(new ApiError(401, "Unauthorized", "UNAUTHORIZED"));
     }
     // req.user is set by requireAuth middleware (id, email?, name?, iat?, exp?)
-    return res.status(200).json({ user: req.user });
+    return res.status(200).json({ user: (req as any).user });
   } catch (err) {
     next(err);
   }
@@ -79,7 +100,11 @@ export async function meHandler(req: Request, res: Response, next: NextFunction)
  * Clears the auth cookie.
  * Returns: 204 No Content
  */
-export async function logoutHandler(_req: Request, res: Response, next: NextFunction) {
+export async function logoutHandler(
+  _req: Request,
+  res: Response,
+  next: NextFunction
+) {
   try {
     res.clearCookie(AUTH_COOKIE, {
       ...cookieBaseOptions,
